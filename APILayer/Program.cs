@@ -1,5 +1,6 @@
 using APILayer.Middlewares;
 using BusinessLogicLayer;
+using BusinessLogicLayer.HttpClients;
 using DataAccessLayer;
 using FluentValidation.AspNetCore;
 
@@ -29,6 +30,19 @@ builder.Services.AddCors(options =>
                .AllowAnyMethod();
     });
 });
+
+// Add httpclient with base URI
+builder.Services.AddHttpClient<UserMicroserviceClient>(options =>
+{
+    options.BaseAddress = new Uri($"http://{Environment.GetEnvironmentVariable("UserMicroserviceHost")}:{Environment.GetEnvironmentVariable("UserMicroservicePort")}");
+});
+
+builder.Services.AddHttpClient<ProductMicroserviceClient>(options =>
+{
+    options.BaseAddress = new Uri($"http://{Environment.GetEnvironmentVariable("ProductMicroserviceHost")}:{Environment.GetEnvironmentVariable("ProductMicroservicePort")}");
+});
+
+
 
 var app = builder.Build();
 

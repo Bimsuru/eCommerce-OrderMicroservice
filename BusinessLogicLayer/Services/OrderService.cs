@@ -1,6 +1,7 @@
 
 using AutoMapper;
 using BusinessLogicLayer.DTO;
+using BusinessLogicLayer.HttpClients;
 using BusinessLogicLayer.ServiceContracts;
 using DataAccessLayer.Entities;
 using DataAccessLayer.RepositoryContracts;
@@ -18,9 +19,12 @@ public class OrderService : IOrderService
     private readonly IValidator<OrderUpdateRequest> _orderUpdateRequestValidator;
     private readonly IValidator<OrderItemUpdateRequest> _orderItemUpdateRequestValidator;
     private readonly ValidationService _validationService;
+    private readonly UserMicroserviceClient _userMicroserviceClient;
+    private readonly ProductMicroserviceClient _productMicroserviceClient;
     public OrderService(IMapper mapper, IOrderRepository orderRepository, IValidator<OrderAddRequest> orderAddRequestValidator,
                         IValidator<OrderItemAddRequest> orderItemAddRequestValidator, ValidationService validationService,
-                        IValidator<OrderUpdateRequest> orderUpdateRequestValidator, IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator)
+                        IValidator<OrderUpdateRequest> orderUpdateRequestValidator, IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator,
+                        UserMicroserviceClient userMicroserviceClient, ProductMicroserviceClient productMicroserviceClient)
     {
         _mapper = mapper;
         _orderRepository = orderRepository;
@@ -29,6 +33,8 @@ public class OrderService : IOrderService
         _validationService = validationService;
         _orderUpdateRequestValidator = orderUpdateRequestValidator;
         _orderItemUpdateRequestValidator = orderItemUpdateRequestValidator;
+        _userMicroserviceClient = userMicroserviceClient;
+        _productMicroserviceClient = productMicroserviceClient;
     }
     public async Task<OrderResponse?> AddOrder(OrderAddRequest orderAddRequest)
     {
@@ -40,6 +46,9 @@ public class OrderService : IOrderService
 
         var order = _mapper.Map<Order>(orderAddRequest);
 
+        // CheckUserAndProductIds using user and product microservices
+        order = await CheckUserAndProductIds(order);
+        
         // Calculation
         order = Calculation(order);
 
@@ -110,6 +119,9 @@ public class OrderService : IOrderService
         // Mapped update model into order model
         var order = _mapper.Map<Order>(orderUpdateRequest);
 
+        // CheckUserAndProductIds using user and product microservices
+        order = await CheckUserAndProductIds(order);
+
         // Create filter
         FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(temp => temp.OrderID, order.OrderID);
 
@@ -125,6 +137,8 @@ public class OrderService : IOrderService
 
         // Add uniq id value into _id
         updateOrderInput._id = exittingOrder._id;
+
+
 
         // Invoke
         var updatedOrderRes = await _orderRepository.UpdateOrder(updateOrderInput);
@@ -144,6 +158,29 @@ public class OrderService : IOrderService
             orderItem.TotalPrice = orderItem.UnitPrice * orderItem.Quantity;
         }
         order.TotalBill = order.OrderItems.Sum(temp => temp.TotalPrice);
+
+        return order;
+    }
+
+    private async Task<Order> CheckUserAndProductIds(Order order)
+    {
+        // Check user id is valid or not
+        // invoke users microservice using httpclient and req this microservice 
+        var user = await _userMicroserviceClient.GetUserByIdAsync(order.UserID);
+
+        if (user == null)
+        {
+            throw new ArgumentException($"Invalid user id : {order.UserID}");
+        }
+
+        // Check productid using product microservice
+        foreach (var item in order.OrderItems)
+        {
+            var product = await _productMicroserviceClient.GetProductByIdAsync(item.ProductID);
+            if (product == null)
+                throw new ArgumentException($"Invalid product id : {item.ProductID}");
+
+        }
 
         return order;
     }
