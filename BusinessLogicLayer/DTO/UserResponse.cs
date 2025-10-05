@@ -5,5 +5,11 @@ public record UserResponse(
     string? Email,
     string? PersonName,
     string? Gender
-);
+)
+{
+    public UserResponse() : this(default, default, default, default)
+    {
+        
+    }
+}
 

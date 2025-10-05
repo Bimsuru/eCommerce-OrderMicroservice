@@ -40,13 +40,6 @@ public class OrderRepository : IOrderRepository
         return order;
     }
 
-    public async Task<IEnumerable<Order?>> GetOrders()
-    {
-        FilterDefinition<Order> filter = Builders<Order>.Filter.Empty;
-
-        return (await _collection.FindAsync(filter)).ToList();
-    }
-
     public async Task<IEnumerable<Order?>> GetOrdersByCondition(FilterDefinition<Order> filter)
     {
         var orders = (await _collection.FindAsync(filter)).ToList();
