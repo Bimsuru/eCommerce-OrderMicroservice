@@ -26,8 +26,10 @@ public static class DependencyInjection
             options.BaseAddress = new Uri($"http://{Environment.GetEnvironmentVariable("UserMicroserviceHost")}:{Environment.GetEnvironmentVariable("UserMicroservicePort")}");
         }).AddPolicyHandler(
             services.BuildServiceProvider().GetRequiredService<IPolicyService>()
-            .GetRetryPolicy(3, 2)
-            );
+            .GetRetryPolicy(5, 2)
+            )
+          .AddPolicyHandler(services.BuildServiceProvider().GetRequiredService<IPolicyService>()
+            .GetCircuitBreakerPolicy(3, 1));
 
         services.AddHttpClient<ProductMicroserviceClient>(options =>
         {

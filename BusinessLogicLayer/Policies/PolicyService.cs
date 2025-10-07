@@ -1,6 +1,8 @@
 
 using Microsoft.Extensions.Logging;
 using Polly;
+using Polly.CircuitBreaker;
+
 
 namespace BusinessLogicLayer.Policies;
 
@@ -12,6 +14,7 @@ public class PolicyService : IPolicyService
     {
         _logger = logger;
     }
+
     public IAsyncPolicy<HttpResponseMessage> GetRetryPolicy(int count, int time)
     {
         var retryPolicy = Policy.HandleResult<HttpResponseMessage>(r =>
@@ -25,5 +28,25 @@ public class PolicyService : IPolicyService
             );
 
         return retryPolicy;
+    }
+
+    public IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy(int openReqLimit, int breakTime)
+    {
+        AsyncCircuitBreakerPolicy<HttpResponseMessage> circuitBreakerPolicy = Policy.HandleResult<HttpResponseMessage>(r =>
+        !r.IsSuccessStatusCode).CircuitBreakerAsync(
+            handledEventsAllowedBeforeBreaking: openReqLimit,
+            durationOfBreak: TimeSpan.FromMinutes(breakTime),
+            onBreak: (outcome, timespan) =>
+            {
+                _logger.LogInformation($"After {openReqLimit} requests failures, now  circuit breaker open state within {timespan.TotalMinutes} minutes and all the requests are block this time");
+            },
+
+            onReset: () =>
+            {
+                _logger.LogInformation($"Now circuit breaker half opern state after the total time of breaking time and now one request allow to send dependency service");
+            }
+        );
+
+        return circuitBreakerPolicy;
     }
 }
