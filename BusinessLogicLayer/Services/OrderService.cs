@@ -46,8 +46,8 @@ public class OrderService : IOrderService
 
         var order = _mapper.Map<Order>(orderAddRequest);
 
-        // GetUserAndProductsByIds using user and product microservices
-        var userAndProductsRes = await GetUserAndProductsByIds(order);
+        // Validate userid and products ids
+        await ValidateUserAndProductsById(order);
 
 
         // Calculation
@@ -60,7 +60,7 @@ public class OrderService : IOrderService
         if (addedOrder != null)
         {
             // Invoke creation of orderResponse
-            var orderResponse = CreateOrderResponse(addedOrder, userAndProductsRes.user, userAndProductsRes.products);
+            var orderResponse = await CreateOrderResponse(addedOrder);
             return orderResponse;
         }
         else
@@ -79,8 +79,7 @@ public class OrderService : IOrderService
 
         if (order != null)
         {
-            var userAndProductsRes = await GetUserAndProductsByIds(order!);
-            var orderResponse = CreateOrderResponse(order!, userAndProductsRes.user, userAndProductsRes.products);
+            var orderResponse = await CreateOrderResponse(order);
 
             return orderResponse;
         }
@@ -98,12 +97,10 @@ public class OrderService : IOrderService
         {
             foreach (var order in orders)
             {
-                // get the products and users objects from the dependent services
-                var userAndProductsRes = await GetUserAndProductsByIds(order!);
 
-                var orderResponse = CreateOrderResponse(order!, userAndProductsRes.user, userAndProductsRes.products);
+                var orderResponse = await CreateOrderResponse(order!);
 
-                orderResponses.Add(orderResponse);
+                orderResponses.Add(orderResponse!);
             }
             return orderResponses.ToList()!;
         }
@@ -123,8 +120,8 @@ public class OrderService : IOrderService
         // Mapped update model into order model
         var order = _mapper.Map<Order>(orderUpdateRequest);
 
-        // GetUserAndProductsByIds using user and product microservices and this res have products and users objects
-        var userAndProductsRes = await GetUserAndProductsByIds(order);
+        // Validate userid and products ids
+        await ValidateUserAndProductsById(order);
 
         // Create filter
         FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(temp => temp.OrderID, order.OrderID);
@@ -149,7 +146,7 @@ public class OrderService : IOrderService
         if (updatedOrderRes != null)
         {
             // Invoke creation of orderResponse
-            var orderResponse = CreateOrderResponse(updatedOrderRes, userAndProductsRes.user, userAndProductsRes.products);
+            var orderResponse = await CreateOrderResponse(updatedOrderRes);
             return orderResponse;
         }
 
@@ -167,7 +164,7 @@ public class OrderService : IOrderService
         return order;
     }
 
-    private async Task<(UserResponse user, List<ProductResponse> products)> GetUserAndProductsByIds(Order order)
+    private async Task ValidateUserAndProductsById(Order order)
     {
         // Check user id is valid or not
         // invoke users microservice using httpclient and req this microservice 
@@ -176,11 +173,7 @@ public class OrderService : IOrderService
         if (user == null)
         {
             throw new ArgumentException($"Invalid user id : {order.UserID}");
-
         }
-
-        // Check productid using product microservice
-        List<ProductResponse> products = new List<ProductResponse>();
 
         foreach (var item in order.OrderItems)
         {
@@ -189,27 +182,31 @@ public class OrderService : IOrderService
             if (product == null)
                 throw new ArgumentException($"Invalid product id : {item.ProductID}");
 
-            products.Add(product);
         }
-
-        return (user, products);
     }
-
-    private OrderResponse CreateOrderResponse(Order order, UserResponse user, List<ProductResponse> products)
+    private async Task<OrderResponse?> CreateOrderResponse(Order order)
     {
+        // invoke users microservice using httpclient and req this microservice 
+        var user = await _userMicroserviceClient.GetUserByIdAsync(order.UserID);
+
+        if (user == null)
+        {
+            return null;
+        }
 
         var orderResponse = _mapper.Map<OrderResponse>(order);
 
         _mapper.Map<UserResponse, OrderResponse>(user, orderResponse);
 
-        foreach (var orderItemRes in orderResponse.OrderItems)
+        foreach (var item in orderResponse.OrderItems)
         {
-            var productRes = products.Where(temp => temp.ProductID == orderItemRes.ProductID).FirstOrDefault();
+            var productRes = await _productMicroserviceClient.GetProductByIdAsync(item.ProductID);
 
             if (productRes == null)
                 continue;
 
-            _mapper.Map<ProductResponse, OrderItemResponse>(productRes, orderItemRes);
+            _mapper.Map<ProductResponse, OrderItemResponse>(productRes, item);
+
         }
 
         return orderResponse;

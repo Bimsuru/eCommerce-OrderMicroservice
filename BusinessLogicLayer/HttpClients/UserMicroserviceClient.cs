@@ -29,7 +29,16 @@ public class UserMicroserviceClient
             }
             else
             {
-                throw new HttpRequestException($"HTTP request failed with status code {response.StatusCode}");
+                //throw new HttpRequestException($"HTTP request failed with status code {response.StatusCode}");
+
+                // added Temporarily fault data
+                return new UserResponse(
+                    PersonName: "Temporarily Unavailable",
+                    Email: "Temporarily Unavailable",
+                    UserID: Guid.Empty,
+                    Gender: "Temporarily Unavailable"
+                );
+
             }
         }
 
