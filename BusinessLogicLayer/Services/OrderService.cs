@@ -153,6 +153,11 @@ public class OrderService : IOrderService
         return null;
     }
 
+    /// <summary>
+    /// calculation totalbill and totalprice
+    /// </summary>
+    /// <param name="order"></param>
+    /// <returns></returns>
     private Order Calculation(Order order)
     {
         foreach (var orderItem in order.OrderItems)
@@ -164,26 +169,29 @@ public class OrderService : IOrderService
         return order;
     }
 
+    /// <summary>
+    /// validate the userid and orderid on update and add methods
+    /// </summary>
+    /// <param name="order"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
     private async Task ValidateUserAndProductsById(Order order)
     {
         // Check user id is valid or not
         // invoke users microservice using httpclient and req this microservice 
-        var user = await _userMicroserviceClient.GetUserByIdAsync(order.UserID);
-
-        if (user == null)
-        {
-            throw new ArgumentException($"Invalid user id : {order.UserID}");
-        }
+        var user = await _userMicroserviceClient.GetUserByIdAsync(order.UserID) ?? throw new ArgumentException($"Invalid user id : {order.UserID}");
 
         foreach (var item in order.OrderItems)
         {
-            var product = await _productMicroserviceClient.GetProductByIdAsync(item.ProductID);
-
-            if (product == null)
-                throw new ArgumentException($"Invalid product id : {item.ProductID}");
-
+            var product = await _productMicroserviceClient.GetProductByIdAsync(item.ProductID) ?? throw new ArgumentException($"Invalid product id : {item.ProductID}");
         }
     }
+
+    /// <summary>
+    /// create order response model
+    /// </summary>
+    /// <param name="order"></param>
+    /// <returns></returns>
     private async Task<OrderResponse?> CreateOrderResponse(Order order)
     {
         // invoke users microservice using httpclient and req this microservice 
