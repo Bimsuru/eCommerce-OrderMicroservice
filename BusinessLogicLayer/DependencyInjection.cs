@@ -26,15 +26,17 @@ public static class DependencyInjection
             options.BaseAddress = new Uri($"http://{Environment.GetEnvironmentVariable("UserMicroserviceHost")}:{Environment.GetEnvironmentVariable("UserMicroservicePort")}");
         }).AddPolicyHandler(
             services.BuildServiceProvider().GetRequiredService<IPolicyService>()
-            .GetRetryPolicy(5, 2)
-            )
-          .AddPolicyHandler(services.BuildServiceProvider().GetRequiredService<IPolicyService>()
-            .GetCircuitBreakerPolicy(3, 1));
+                .UserServiceCombinedPolicy()
+            );
+
 
         services.AddHttpClient<ProductMicroserviceClient>(options =>
         {
             options.BaseAddress = new Uri($"http://{Environment.GetEnvironmentVariable("ProductMicroserviceHost")}:{Environment.GetEnvironmentVariable("ProductMicroservicePort")}");
-        });
+        }).AddPolicyHandler(
+            services.BuildServiceProvider().GetRequiredService<IPolicyService>()
+            .ProductServiceCombinedPolicy()
+        );
 
         return services;
     }
