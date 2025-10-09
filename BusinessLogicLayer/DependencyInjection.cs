@@ -6,7 +6,6 @@ using BusinessLogicLayer.Services;
 using BusinessLogicLayer.Validators;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
-using Polly;
 
 namespace BusinessLogicLayer;
 
@@ -19,6 +18,11 @@ public static class DependencyInjection
         services.AddScoped<ValidationService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddTransient<IPolicyService, PolicyService>();
+
+        services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = $"{Environment.GetEnvironmentVariable("REDIS_HOST")}:{Environment.GetEnvironmentVariable("REDIS_PORT")}";
+        });
 
         // Add httpclient with base URI
         services.AddHttpClient<UserMicroserviceClient>(options =>

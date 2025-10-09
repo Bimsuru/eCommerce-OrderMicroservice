@@ -74,7 +74,7 @@ public class PolicyService : IPolicyService
                 QuantityInStock: 0
             );
 
-            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            var response = new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
             {
                 Content = new StringContent(JsonSerializer.Serialize(productResponse), Encoding.UTF8, "application/json")
             };

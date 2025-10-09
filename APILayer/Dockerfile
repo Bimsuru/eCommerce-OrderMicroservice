@@ -26,6 +26,9 @@ ENV MONGODB_DB_NAME=OrdersDatabase
 ENV UserMicroserviceHost=localhost,
 ENV UserMicroservicePort=7000,
 ENV ProductMicroserviceHost=localhost,
-ENV ProductMicroservicePort=8000
+ENV ProductMicroservicePort=8000,
+ENV REDIS_HOST=redis,
+ENV REDIS_PORT=6379
+
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "APILayer.dll"]
