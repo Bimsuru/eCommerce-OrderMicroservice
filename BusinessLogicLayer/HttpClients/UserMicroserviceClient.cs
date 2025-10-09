@@ -1,9 +1,12 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
 using BusinessLogicLayer.DTO;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
+using ZstdSharp.Unsafe;
 
 namespace BusinessLogicLayer.HttpClients;
 
@@ -11,16 +14,29 @@ public class UserMicroserviceClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<UserMicroserviceClient> _logger;
-    public UserMicroserviceClient(HttpClient httpClient, ILogger<UserMicroserviceClient> logger)
+    private readonly IDistributedCache _distributedCache;
+    public UserMicroserviceClient(HttpClient httpClient, ILogger<UserMicroserviceClient> logger, IDistributedCache distributedCache)
     {
         _httpClient = httpClient;
         _logger = logger;
+        _distributedCache = distributedCache;
     }
 
     public async Task<UserResponse?> GetUserByIdAsync(Guid id)
     {
         try
         {
+            // Get user details from the cache
+            string cacheKey = $"user:{id}";
+
+            string? userCacheRes = await _distributedCache.GetStringAsync(cacheKey);
+
+            if (userCacheRes != null)
+            {
+                var user = JsonSerializer.Deserialize<UserResponse>(userCacheRes);
+                return user;
+            }
+
             HttpResponseMessage? response = await _httpClient.GetAsync($"/api/v1/users/{id}");
 
             // check response is success or not
@@ -54,6 +70,16 @@ public class UserMicroserviceClient
             if (existinguser == null)
                 throw new ArgumentException("Invalid user id");
 
+            // write cache this user object
+            string userJson = JsonSerializer.Serialize(existinguser);
+
+            // Add cache options
+            DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
+                                                                        .SetAbsoluteExpiration(TimeSpan.FromSeconds(300))
+                                                                        .SetSlidingExpiration(TimeSpan.FromSeconds(100));
+
+            await _distributedCache.SetStringAsync(cacheKey, userJson, options);
+            
             return existinguser;
         }
         catch (BrokenCircuitException ex)
