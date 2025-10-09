@@ -6,7 +6,6 @@ using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Logging;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
-using ZstdSharp.Unsafe;
 
 namespace BusinessLogicLayer.HttpClients;
 
@@ -75,11 +74,11 @@ public class UserMicroserviceClient
 
             // Add cache options
             DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
-                                                                        .SetAbsoluteExpiration(TimeSpan.FromSeconds(300))
-                                                                        .SetSlidingExpiration(TimeSpan.FromSeconds(100));
+                                                                        .SetAbsoluteExpiration(DateTimeOffset.UtcNow.AddMinutes(5))
+                                                                        .SetSlidingExpiration(TimeSpan.FromMinutes(3));
 
             await _distributedCache.SetStringAsync(cacheKey, userJson, options);
-            
+
             return existinguser;
         }
         catch (BrokenCircuitException ex)
