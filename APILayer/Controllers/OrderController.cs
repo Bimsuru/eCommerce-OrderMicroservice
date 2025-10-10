@@ -17,7 +17,7 @@ public class OrderController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<OrderResponse>>> GetAllOrders(Guid? productid, Guid? userid, DateTime? orderDate)
+    public async Task<ActionResult<List<OrderResponse>>> GetAllOrders([FromQuery]Guid? productid, [FromQuery]Guid? userid, [FromQuery]DateTime? orderDate)
     {
         // Create filter variable
         FilterDefinition<Order> filter = Builders<Order>.Filter.Empty;

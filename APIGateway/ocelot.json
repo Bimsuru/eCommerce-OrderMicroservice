@@ -1,0 +1,46 @@
+{
+    "Routes": 
+    [
+        {
+            "UpstreamPathTemplate": "/gateway/orders",
+            "DownstreamPathTemplate": "/api/v1/orders",
+            "DownstreamHostAndPorts": 
+            [
+                {
+                    "Host": "ordermicroservice.api",
+                    "Port": 8080
+                }
+            ],
+            "UpstreamHttpMethod": 
+            [
+                "Get",
+                "Post",
+                "Options"
+            ],
+            "UpstreamScheme": "http"
+        },
+
+        {
+            "UpstreamPathTemplate": "/gateway/orders/{id}",
+            "DownstreamPathTemplate": "/api/v1/orders/{id}",
+            "DownstreamHostAndPorts": 
+            [
+                {
+                    "Host": "ordermicroservice.api",
+                    "Port": 8080
+                }
+            ],
+            "UpstreamHttpMethod": 
+            [
+                "Get",
+                "Put",
+                "Delete"
+            ],
+            "UpstreamScheme": "http"
+        }
+    ],
+    "GlobalConfiguration": 
+    {
+        "BaseUrl": "http://localhost:4000"
+    }
+}

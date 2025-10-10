@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BusinessLogicLayer", "Busin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccessLayer", "DataAccessLayer\DataAccessLayer.csproj", "{94B9D2DB-E8D1-416D-BF4B-28F0BDF4ACF1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIGateway", "APIGateway\APIGateway.csproj", "{3B165579-1779-4818-84E1-9C09E6002335}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{94B9D2DB-E8D1-416D-BF4B-28F0BDF4ACF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{94B9D2DB-E8D1-416D-BF4B-28F0BDF4ACF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{94B9D2DB-E8D1-416D-BF4B-28F0BDF4ACF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B165579-1779-4818-84E1-9C09E6002335}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B165579-1779-4818-84E1-9C09E6002335}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B165579-1779-4818-84E1-9C09E6002335}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B165579-1779-4818-84E1-9C09E6002335}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
