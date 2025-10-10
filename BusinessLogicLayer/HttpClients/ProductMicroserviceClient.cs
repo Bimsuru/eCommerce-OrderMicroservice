@@ -38,7 +38,7 @@ public class ProductMicroserviceClient
                 return cacheProduct;
             }
     
-            var response = await _httpClient.GetAsync($"/api/v1/products/{id}");
+            var response = await _httpClient.GetAsync($"/gateway/products/{id}");
     
             if (!response.IsSuccessStatusCode)
             {

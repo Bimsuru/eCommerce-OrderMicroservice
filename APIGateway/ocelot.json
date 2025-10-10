@@ -34,10 +34,102 @@
             [
                 "Get",
                 "Put",
-                "Delete"
+                "Delete",
+                "Options"
             ],
             "UpstreamScheme": "http"
+        },
+        {
+            "UpstreamPathTemplate": "/gateway/products",
+            "DownstreamPathTemplate": "/api/v1/products",
+            "DownstreamHostAndPorts":
+            [
+                {
+                    "Host": "productmicroservice.api",
+                    "Port": 8080
+                }
+            ],
+            "UpstreamHttpMethod":
+            [
+                "Get",
+                "Post",
+                "Options"
+            ],
+            "UpstreamScheme": "http" 
+        },
+        
+        {
+            "UpstreamPathTemplate": "/gateway/products/{id}",
+            "DownstreamPathTemplate": "/api/v1/products/{id}",
+            "DownstreamHostAndPorts":
+            [
+                {
+                    "Host": "productmicroservice.api",
+                    "Port": 8080
+                }
+            ],
+            "UpstreamHttpMethod":
+            [
+                "Get",
+                "Put",
+                "Delete",
+                "Options"
+            ],
+            "UpstreamScheme": "http" 
+        },
+
+        {
+            "UpstreamPathTemplate": "/gateway/auth/register",
+            "DownstreamPathTemplate": "/api/v1/auth/register",
+            "DownstreamHostAndPorts":
+            [
+                {
+                    "Host": "usermicroservice.api",
+                    "Port": 8080
+                }
+            ],
+            "UpstreamHttpMethod":
+            [
+                "Post",
+                "Options"
+            ],
+            "UpstreamScheme": "http" 
+        },
+        {
+            "UpstreamPathTemplate": "/gateway/auth/login",
+            "DownstreamPathTemplate": "/api/v1/auth/login",
+            "DownstreamHostAndPorts":
+            [
+                {
+                    "Host": "usermicroservice.api",
+                    "Port": 8080
+                }
+            ],
+            "UpstreamHttpMethod":
+            [
+                "Post",
+                "Options"
+            ],
+            "UpstreamScheme": "http" 
+        },
+        {
+            "UpstreamPathTemplate": "/gateway/users/{id}",
+            "DownstreamPathTemplate": "/api/v1/users/{id}",
+            "DownstreamHostAndPorts":
+            [
+                {
+                    "Host": "usermicroservice.api",
+                    "Port": 8080
+                }
+            ],
+            "UpstreamHttpMethod":
+            [
+                "Get"
+            ],
+            "UpstreamScheme": "http" 
         }
+
+
     ],
     "GlobalConfiguration": 
     {

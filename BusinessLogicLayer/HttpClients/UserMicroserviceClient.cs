@@ -36,7 +36,7 @@ public class UserMicroserviceClient
                 return user;
             }
 
-            HttpResponseMessage? response = await _httpClient.GetAsync($"/api/v1/users/{id}");
+            HttpResponseMessage? response = await _httpClient.GetAsync($"/gateway/users/{id}");
 
             // check response is success or not
             if (!response.IsSuccessStatusCode)
