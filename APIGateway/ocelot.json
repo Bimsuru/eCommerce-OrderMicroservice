@@ -2,7 +2,7 @@
     "Routes": 
     [
         {
-            "UpstreamPathTemplate": "/gateway/orders",
+            "UpstreamPathTemplate": "/gateway/orders/",
             "DownstreamPathTemplate": "/api/v1/orders",
             "DownstreamHostAndPorts": 
             [
@@ -17,11 +17,17 @@
                 "Post",
                 "Options"
             ],
-            "UpstreamScheme": "http"
+            "UpstreamScheme": "http",
+            "FileCacheOptions": 
+            {
+                "TtlSeconds": 30,
+                "Region": "orders"
+            }
+            
         },
 
         {
-            "UpstreamPathTemplate": "/gateway/orders/{id}",
+            "UpstreamPathTemplate": "/gateway/orders/{id}/",
             "DownstreamPathTemplate": "/api/v1/orders/{id}",
             "DownstreamHostAndPorts": 
             [
@@ -40,7 +46,7 @@
             "UpstreamScheme": "http"
         },
         {
-            "UpstreamPathTemplate": "/gateway/products",
+            "UpstreamPathTemplate": "/gateway/products/",
             "DownstreamPathTemplate": "/api/v1/products",
             "DownstreamHostAndPorts":
             [
@@ -55,11 +61,38 @@
                 "Post",
                 "Options"
             ],
-            "UpstreamScheme": "http" 
+            "UpstreamScheme": "http" ,
+
+            "QoSOptions": 
+            {
+                "ExceptionsAllowedBeforeBreaking": 3,
+                "DurationOfBreak" : 100000,
+                "TimeoutValue" : 5000
+            },
+
+            "RetryOptions":
+            {
+                "RetryCount": 3,
+                "RetryOnServerError": true
+            },
+
+            "RateLimitOptions": 
+            {
+                "Period": "1m",
+                "Limit": 3,
+                "HttpStatusCode": 429,
+                "EnableRateLimiting": true,
+                "PeriodTimespan": 10,
+                "ClientWhitelist":
+                [
+                    "client1"
+                ],
+                "ClientIdHeader": "ClientId"
+            }
         },
         
         {
-            "UpstreamPathTemplate": "/gateway/products/{id}",
+            "UpstreamPathTemplate": "/gateway/products/{id}/",
             "DownstreamPathTemplate": "/api/v1/products/{id}",
             "DownstreamHostAndPorts":
             [
@@ -79,7 +112,7 @@
         },
 
         {
-            "UpstreamPathTemplate": "/gateway/auth/register",
+            "UpstreamPathTemplate": "/gateway/auth/register/",
             "DownstreamPathTemplate": "/api/v1/auth/register",
             "DownstreamHostAndPorts":
             [
@@ -96,7 +129,7 @@
             "UpstreamScheme": "http" 
         },
         {
-            "UpstreamPathTemplate": "/gateway/auth/login",
+            "UpstreamPathTemplate": "/gateway/auth/login/",
             "DownstreamPathTemplate": "/api/v1/auth/login",
             "DownstreamHostAndPorts":
             [
@@ -113,7 +146,7 @@
             "UpstreamScheme": "http" 
         },
         {
-            "UpstreamPathTemplate": "/gateway/users/{id}",
+            "UpstreamPathTemplate": "/gateway/users/{id}/",
             "DownstreamPathTemplate": "/api/v1/users/{id}",
             "DownstreamHostAndPorts":
             [

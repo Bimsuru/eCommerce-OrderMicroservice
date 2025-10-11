@@ -1,12 +1,15 @@
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
+using Ocelot.Provider.Polly;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile("ocelot.json", optional: false, reloadOnChange: true);
 
 // Add Ocelot into service collection
-builder.Services.AddOcelot();
+builder.Services
+                .AddOcelot()
+                .AddPolly();
 
 var app = builder.Build();
 
