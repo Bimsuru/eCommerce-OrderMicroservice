@@ -64,7 +64,7 @@ public class RabbitMQConsumer : IRabbitMQConsumer, IDisposable
             if (messageString != null && routingKey == "product.update.name")
             {
                 var productUpdateMessage = JsonSerializer.Deserialize<ProductUpdateMessage>(messageString);
-                _logger.LogInformation($"Product id : {productUpdateMessage!.ProductID} and product name : {productUpdateMessage.ProductName} are updated.");
+                _logger.LogInformation($"Product id : {productUpdateMessage!.ProductID} and product name : {productUpdateMessage.NewProductName} are updated.");
             }
             else if(messageString != null && routingKey == "product.delete")
             {
