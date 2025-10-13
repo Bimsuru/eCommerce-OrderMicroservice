@@ -1,6 +1,7 @@
 using BusinessLogicLayer.HttpClients;
 using BusinessLogicLayer.Mappers;
 using BusinessLogicLayer.Policies;
+using BusinessLogicLayer.RabbitMQ;
 using BusinessLogicLayer.ServiceContracts;
 using BusinessLogicLayer.Services;
 using BusinessLogicLayer.Validators;
@@ -41,6 +42,9 @@ public static class DependencyInjection
             services.BuildServiceProvider().GetRequiredService<IPolicyService>()
             .ProductServiceCombinedPolicy()
         );
+
+        services.AddTransient<IRabbitMQConsumer, RabbitMQConsumer>();
+        services.AddHostedService<RabbitMQHostService>();
 
         return services;
     }
