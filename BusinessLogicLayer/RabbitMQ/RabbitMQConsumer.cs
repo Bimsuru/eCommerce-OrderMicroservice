@@ -13,11 +13,13 @@ public class RabbitMQConsumer : IRabbitMQConsumer, IDisposable
     private readonly IConnection _connection;
     private readonly IModel _channel;
     private readonly ILogger<RabbitMQConsumer> _logger;
+    private ConsumeMessageEvents _consumeMessageEvents;
 
-    public RabbitMQConsumer(IConfiguration configuration, ILogger<RabbitMQConsumer> logger)
+    public RabbitMQConsumer(IConfiguration configuration, ILogger<RabbitMQConsumer> logger, ConsumeMessageEvents consumeMessageEvents)
     {
         _configuration = configuration;
         _logger = logger;
+        _consumeMessageEvents = consumeMessageEvents;
 
         string hostName = _configuration["RABBITMQ_HOST"]!;
         string port = _configuration["RABBITMQ_PORT"]!;
@@ -40,36 +42,34 @@ public class RabbitMQConsumer : IRabbitMQConsumer, IDisposable
 
     }
 
-    public void Consumer(string routingKey, string exchangeName, string queueName)
+    public void Consumer(Dictionary<string, object> headers, string exchangeName, string queueName, string eventName)
     {
         // Exchange config
-        _channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Direct, durable: true);
+        _channel.ExchangeDeclare(exchange: exchangeName, type: ExchangeType.Headers, durable: true);
 
         // exclusive mean for the false - can access this queue any connection
-        _channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: null);
+        _channel.QueueDeclare(queue: queueName, durable: true, exclusive: false, autoDelete: false, arguments: headers);
         // arguments --> x-message-ttl | x-max-lenght | x-expired
 
         // Bind to the queue into this message using maching routingKey
-        _channel.QueueBind(queue: queueName, exchange: exchangeName, routingKey: routingKey);
+        _channel.QueueBind(queue: queueName, exchange: exchangeName, routingKey: string.Empty, arguments: headers);
 
         // now consume ready because rabbitmq client and server now connect with a channel
         EventingBasicConsumer consumer = new EventingBasicConsumer(_channel);
 
         // Recieved messages from the queue
-        consumer.Received += (sender, args) =>
+        consumer.Received += async (sender, args) =>
         {
             byte[] body = args.Body.ToArray();
             string? messageString = Encoding.UTF8.GetString(body);
 
-            if (messageString != null && routingKey == "product.update.name")
+            if (messageString != null && eventName == "update")
             {
-                var productUpdateMessage = JsonSerializer.Deserialize<ProductUpdateMessage>(messageString);
-                _logger.LogInformation($"Product id : {productUpdateMessage!.ProductID} and product name : {productUpdateMessage.NewProductName} are updated.");
+                await _consumeMessageEvents.ProductUpdateEvent(messageString);
             }
-            else if(messageString != null && routingKey == "product.delete")
+            if (messageString != null && eventName == "delete")
             {
-                var productDeleteMessage = JsonSerializer.Deserialize<ProductDeleteMessage>(messageString);
-                _logger.LogInformation($"Product id : {productDeleteMessage!.ProductID} and product name : {productDeleteMessage.ProductName} are deleted.");
+                await _consumeMessageEvents.ProductDeleteEvent(messageString);
             }
 
         };

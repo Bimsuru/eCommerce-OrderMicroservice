@@ -80,8 +80,8 @@ public class ProductMicroserviceClient
 
             // The cache options for the entry(cache expiration time)
             DistributedCacheEntryOptions options = new DistributedCacheEntryOptions()
-                                                            .SetAbsoluteExpiration(TimeSpan.FromSeconds(300))  // give 30s for the this key value product store
-                                                            .SetSlidingExpiration(TimeSpan.FromSeconds(100));  // but retrive 10s for this product if its not remove 10s not waiting 30s 
+                                                            .SetAbsoluteExpiration(TimeSpan.FromSeconds(300));  // give 30s for the this key value product store
+                                                            // .SetSlidingExpiration(TimeSpan.FromSeconds(100));  // but retrive 10s for this product if its not remove 10s not waiting 30s 
 
             // Write product object into cache memory
             await _distributedCache.SetStringAsync(cacheKey, productJson, options);

@@ -44,7 +44,9 @@ public static class DependencyInjection
         );
 
         services.AddTransient<IRabbitMQConsumer, RabbitMQConsumer>();
-        services.AddHostedService<RabbitMQHostService>();
+        services.AddHostedService<RabbitMQProductUpdateHostService>();
+        services.AddHostedService<RabbitMQProductDeleteHostService>();
+        services.AddTransient<ConsumeMessageEvents>();
 
         return services;
     }
